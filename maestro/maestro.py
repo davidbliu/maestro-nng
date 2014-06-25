@@ -18,7 +18,6 @@ class Conductor:
 
     def __init__(self, config):
         self._config = config
-
         # Create container ships.
         self._ships = dict(
             (k, entities.Ship(

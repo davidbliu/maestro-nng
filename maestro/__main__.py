@@ -69,6 +69,9 @@ def create_parser():
 
 
 def main(args=None):
+    print 'these are the args'
+    print args
+    print 'those are hello'
     options = create_parser().parse_args(args)
 
     # If the version is requested, show it and exit right away.
@@ -94,6 +97,8 @@ def main(args=None):
             .setLevel(logging.WARN))
 
     c = maestro.Conductor(config)
+
+
     if options.completion is not None:
         args = filter(lambda x: not x.startswith('-'),
                       options.completion.split(' '))

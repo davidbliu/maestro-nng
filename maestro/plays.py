@@ -12,7 +12,8 @@ import sys
 
 from . import exceptions
 from . import termoutput
-
+from . import etcd_config
+from etcd_config import *
 
 # Some utility functions for output.
 def color(cond):
@@ -351,6 +352,9 @@ class Start(BaseOrchestrationPlay):
                 'Login to {} failed: {}'.format(registry, e))
 
     def _create_and_start_container(self, container, o):
+
+        # first register the container with etcd
+        register_with_etcd(container)
         """Start the given container.
 
         If the container and its application are already running, no action is
@@ -433,7 +437,7 @@ class Start(BaseOrchestrationPlay):
                 'Container status could not be obtained after start!')
 
         # Wait up for the container's application to come online.
-        o.pending('waiting for service...')
+        o.pending('waiting for service...') 
         return self._check_for_state(container, 'running', check_running)
 
 

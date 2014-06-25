@@ -1,0 +1,64 @@
+# This is an example of a Maestro environment description file. It starts up a
+# multi-node ZooKeeper cluster to serve a multi-node Kafka broker cluster than
+# can be used for pub/sub and messaging.
+
+name: cassandra
+
+ships:
+  # docker_port remains at default 4243 on all our hosts
+  vm1: {ip: &vm1ip 54.184.184.23}
+  vm2: {ip: 54.188.5.77}
+  vm3: {ip: 54.189.247.174}
+  vm4: {ip: 54.185.28.145}
+
+services:
+  # 2-node ZooKeeper cluster.
+  cassandra:
+    image: davidbliu/cassandra
+    instances:
+      cassandra1:
+        ship: vm1
+        ports: {transport: 9042, storage: 7000, rpc: 9160}
+        volumes:
+          /var/lib/cassandra/data: /var/lib/cassandra/data
+          /var/lib/cassandra/commitlog: /var/lib/cassandra/commitlog
+      cassandra2:
+        ship: vm2
+        ports: {transport: 9042, storage: 7000, rpc: 9160}
+        volumes:
+          /var/lib/cassandra/data: /var/lib/cassandra/data
+          /var/lib/cassandra/commitlog: /var/lib/cassandra/commitlog
+      cassandra3:
+        ship: vm3
+        ports: {transport: 9042, storage: 7000, rpc: 9160}
+        volumes:
+          /var/lib/cassandra/data: /var/lib/cassandra/data
+          /var/lib/cassandra/commitlog: /var/lib/cassandra/commitlog
+  zookeeper:
+    image: davidbliu/actzookeeper
+    instances:
+      zk-node-1:
+        ship: vm1
+        ports: {smtp: 2181}
+  kafka:
+    image: davidbliu/actkafka
+    requires: [zookeeper]
+    instances:
+      kafka1:
+        ship: vm4
+        ports: {smtp: 9092}
+        env:
+          ZK_PORT_2181_TCP_ADDR : 54.184.184.23
+          ZK_PORT_2181_TCP_PORT : 2181
+          BROKER_ID: 0
+          PORT: 9092
+          HOST_IP: 54.185.28.145
+  
+  rails:
+    image: davidbliu/webserver2
+    requires: [ cassandra, kafka, zookeeper ]
+    instances:
+      rails1:
+        ship: vm1
+        ports: {smtp: 3000}
+
